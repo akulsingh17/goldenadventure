@@ -26,6 +26,15 @@
   const sceneOrder = ['intro', 'level1', 'level2', 'level3', 'level4', 'level5', 'level6'];
   let currentScene = 'intro';
 
+  // Tracks choices for the optional, user-initiated shareable report at the end.
+  // Nothing here is ever sent anywhere automatically — she chooses if/when to
+  // save or copy it herself.
+  const journey = {
+    treatAttempts: 0,
+    relationshipChoice: null,
+    finalChoice: null,
+  };
+
   function goToScene(name) {
     const current = $('.scene.active');
     const next = document.getElementById(`scene-${name}`);
@@ -357,6 +366,7 @@
         say('My favorite! You know me so well!', 2600);
         setTimeout(() => goToScene('level3'), 2000);
       } else {
+        journey.treatAttempts++;
         card.classList.add('wrong');
         setDogState('idle');
         treatReaction.textContent = pick(wrongReactions);
@@ -372,6 +382,7 @@
   $$('#scene-level3 .choice-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       const choice = btn.dataset.choice;
+      journey.relationshipChoice = choice;
       if (choice === 'committed') {
         setDogState('sit');
         say("That's okay 💛", 1800);
@@ -532,6 +543,7 @@
   $$('#scene-level6 .choice-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       const key = btn.dataset.final;
+      journey.finalChoice = key;
       finalReaction.textContent = finalResponses[key] || '';
       if (key === 'yes') {
         setDogState('happy');
@@ -544,8 +556,179 @@
         setDogState('idle');
         say('Take your time 🌸', 2600);
       }
+      revealSharePanel();
     });
   });
+
+  /* ---------------------------------------------------------------------
+     9b. OPTIONAL SHAREABLE REPORT — built and sent only if SHE chooses to
+  --------------------------------------------------------------------- */
+  const sharePanel = $('#share-panel');
+  const reportList = $('#report-list');
+  const shareStatus = $('#share-status');
+  let sharePanelShown = false;
+
+  const relationshipLabels = {
+    single: "❤️ I'm single",
+    committed: '💛 I\'m committed',
+    pass: "🌼 I'd rather not answer",
+  };
+  const finalLabels = {
+    yes: '😊 Yes, let\'s get coffee',
+    maybe: '🤍 Maybe',
+    think: '🌸 Let me think about it',
+  };
+
+  function buildReportLines() {
+    const lines = [];
+    if (journey.relationshipChoice) {
+      lines.push(`Relationship status: ${relationshipLabels[journey.relationshipChoice]}`);
+    }
+    lines.push(
+      journey.treatAttempts === 0
+        ? 'Guessed Buddy\'s favorite treat on the first try 🥜'
+        : `Guessed Buddy's favorite treat after ${journey.treatAttempts} tr${journey.treatAttempts === 1 ? 'y' : 'ies'} 🥜`
+    );
+    if (journey.finalChoice) {
+      lines.push(`Coffee invite: ${finalLabels[journey.finalChoice]}`);
+    }
+    return lines;
+  }
+
+  function revealSharePanel() {
+    if (sharePanelShown) {
+      // still refresh in case they changed their answer
+      renderReport();
+      return;
+    }
+    sharePanelShown = true;
+    renderReport();
+    sharePanel.hidden = false;
+  }
+
+  function renderReport() {
+    reportList.innerHTML = '';
+    buildReportLines().forEach((line) => {
+      const li = document.createElement('li');
+      li.textContent = line;
+      reportList.appendChild(li);
+    });
+  }
+
+  function buildReportText() {
+    const lines = buildReportLines();
+    return `🐾 Buddy's Adventure Report\n${lines.join('\n')}`;
+  }
+
+  $('#btn-copy-text').addEventListener('click', async () => {
+    const text = buildReportText();
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+      shareStatus.textContent = 'Copied! Paste it wherever you\'d like to send it 💌';
+    } catch (err) {
+      shareStatus.textContent = 'Could not copy automatically — you can select the text above manually.';
+    }
+  });
+
+  $('#btn-save-image').addEventListener('click', () => {
+    const dataUrl = drawReportImage(buildReportLines());
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = 'buddys-adventure-report.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    shareStatus.textContent = 'Saved! You can share the image however you\'d like 🖼️';
+  });
+
+  function drawReportImage(lines) {
+    const canvas = document.createElement('canvas');
+    const W = 640, H = 460 + lines.length * 46;
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // background gradient
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#fff0f6');
+    bg.addColorStop(0.6, '#f3e9ff');
+    bg.addColorStop(1, '#eaf7f1');
+    ctx.fillStyle = bg;
+    roundRect(ctx, 0, 0, W, H, 0);
+    ctx.fill();
+
+    // card
+    const pad = 28;
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    roundRect(ctx, pad, pad, W - pad * 2, H - pad * 2, 28);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // decorative paws
+    ctx.font = '30px sans-serif';
+    ctx.fillText('🐾', pad + 20, pad + 50);
+    ctx.fillText('🐾', W - pad - 60, H - pad - 30);
+
+    // title
+    ctx.fillStyle = '#7a5aa8';
+    ctx.font = '700 40px "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText("Buddy's Adventure Report", W / 2, pad + 90);
+
+    ctx.font = '24px "Segoe UI", sans-serif';
+    ctx.fillStyle = '#5a4a5e';
+    let y = pad + 150;
+    lines.forEach((line) => {
+      wrapText(ctx, line, W / 2, y, W - pad * 2 - 60, 32);
+      y += 60;
+    });
+
+    ctx.font = 'italic 22px Georgia, serif';
+    ctx.fillStyle = '#8a768f';
+    ctx.fillText('delivered with a wagging tail', W / 2, H - pad - 20);
+
+    return canvas.toDataURL('image/png');
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function wrapText(ctx, text, cx, y, maxWidth, lineHeight) {
+    const words = text.split(' ');
+    let line = '';
+    const lines = [];
+    words.forEach((word) => {
+      const test = line ? `${line} ${word}` : word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    });
+    if (line) lines.push(line);
+    lines.forEach((l, i) => ctx.fillText(l, cx, y + i * lineHeight));
+  }
 
   /* ---------------------------------------------------------------------
      10. RESTART
@@ -553,6 +736,12 @@
   function restartAdventure() {
     resetFetchGame();
     resetTreatGame();
+    journey.treatAttempts = 0;
+    journey.relationshipChoice = null;
+    journey.finalChoice = null;
+    sharePanelShown = false;
+    sharePanel.hidden = true;
+    shareStatus.textContent = '';
     goToScene('intro');
   }
 
