@@ -1,172 +1,694 @@
-// ===== Golden Adventure =====
-
-const petals = document.querySelector(".petals");
-const button = document.getElementById("startBtn");
-const dog = document.querySelector(".dog-wrapper");
-
-// ----------------------------
-// Create Falling Petals
-// ----------------------------
-
-for(let i=0;i<30;i++){
-
-    const petal=document.createElement("div");
-
-    petal.className="petal";
-
-    petal.style.left=Math.random()*100+"vw";
-
-    petal.style.animationDuration=
-    (6+Math.random()*8)+"s";
-
-    petal.style.animationDelay=
-    Math.random()*5+"s";
-
-    petal.style.opacity=
-    .4+Math.random()*.6;
-
-    petal.style.transform=
-    `scale(${0.5+Math.random()})`;
-
-    petals.appendChild(petal);
-
-}
-
-
-// ----------------------------
-// Dog Bounce
-// ----------------------------
-
-dog.addEventListener("click",()=>{
-
-dog.animate([
-
-{transform:"translateY(0px) scale(1)"},
-
-{transform:"translateY(-25px) scale(1.06)"},
-
-{transform:"translateY(0px) scale(1)"}
-
-],{
-
-duration:500
-
-});
-
-spawnHearts();
-
-});
-
-
-// ----------------------------
-// Hearts
-// ----------------------------
-
-function spawnHearts(){
-
-for(let i=0;i<10;i++){
-
-const h=document.createElement("div");
-
-h.innerHTML="💖";
-
-h.className="heart";
-
-h.style.position="absolute";
-
-h.style.left=
-(window.innerWidth/2-40+Math.random()*80)+"px";
-
-h.style.top=
-(window.innerHeight/2-120+Math.random()*60)+"px";
-
-h.style.fontSize=
-(18+Math.random()*16)+"px";
-
-document.body.appendChild(h);
-
-h.animate([
-
-{
-transform:"translateY(0px)",
-opacity:1
-},
-
-{
-transform:"translateY(-180px)",
-opacity:0
-}
-
-],{
-
-duration:2200,
-
-easing:"ease-out"
-
-});
-
-setTimeout(()=>{
-
-h.remove();
-
-},2200);
-
-}
-
-}
-
-
-// ----------------------------
-// Button
-// ----------------------------
-
-button.addEventListener("click",()=>{
-
-button.innerHTML="YAY!! 🐶";
-
-button.style.background="#82d173";
-
-button.style.transform="scale(1.08)";
-
-spawnHearts();
-
-setTimeout(()=>{
-
-document.querySelector("h1").innerHTML=
-"Level 1 Ready 🎾";
-
-document.querySelector("p").innerHTML=
-"Buddy wants to play fetch!";
-
-button.innerHTML="Start Game ➜";
-
-button.style.background="#ff8fb8";
-
-},1700);
-
-});
-
-
-// ----------------------------
-// Random Ear Wiggle
-// ----------------------------
-
-setInterval(()=>{
-
-dog.animate([
-
-{transform:"rotate(0deg)"},
-
-{transform:"rotate(-2deg)"},
-
-{transform:"rotate(2deg)"},
-
-{transform:"rotate(0deg)"}
-
-],{
-
-duration:700
-
-});
-
-},6000);
+/* ==========================================================================
+   Buddy's Adventure — script.js
+   Vanilla JS only. No frameworks.
+   ========================================================================== */
+(() => {
+  'use strict';
+
+  /* ---------------------------------------------------------------------
+     0. UTILITIES
+  --------------------------------------------------------------------- */
+  const $ = (sel, ctx = document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+  const rand = (min, max) => Math.random() * (max - min) + min;
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  const body = document.body;
+  const dogStage = $('#dog-stage');
+  const speechBubble = $('#speech-bubble');
+  const speechText = $('#speech-text');
+  const heartsLayer = $('#hearts');
+  const pawTrailLayer = $('#paw-trail');
+
+  /* ---------------------------------------------------------------------
+     1. SCENE MANAGER
+  --------------------------------------------------------------------- */
+  const sceneOrder = ['intro', 'level1', 'level2', 'level3', 'level4', 'level5', 'level6'];
+  let currentScene = 'intro';
+
+  function goToScene(name) {
+    const current = $('.scene.active');
+    const next = document.getElementById(`scene-${name}`);
+    if (!next || next === current) return;
+
+    if (current) {
+      current.classList.remove('active');
+    }
+    // small delay so CSS transition can be appreciated
+    requestAnimationFrame(() => {
+      next.classList.add('active');
+    });
+
+    currentScene = name;
+    body.className = `scene-${name}`;
+    updateProgress(name);
+    onEnterScene(name);
+  }
+
+  function updateProgress(name) {
+    $$('.dot').forEach((d) => {
+      d.classList.toggle('active', d.dataset.scene === name);
+    });
+  }
+
+  function onEnterScene(name) {
+    switch (name) {
+      case 'intro':
+        setDogState('idle');
+        say("Hi 😊\nMy human asked me to show you something.\nWould you come with me?", 999999);
+        break;
+      case 'level1':
+        setDogState('sit');
+        centerDogFor('level1');
+        say("Throw the ball for me!", 3200);
+        resetFetchGame();
+        break;
+      case 'level2':
+        setDogState('sit');
+        centerDogFor('level2');
+        say("Ooh, is one of those for me?", 3000);
+        resetTreatGame();
+        break;
+      case 'level3':
+        setDogState('idle');
+        centerDogFor('level3');
+        say("Before I continue...\nMy human wanted me to ask...", 3600);
+        break;
+      case 'committed':
+        setDogState('sit');
+        centerDogFor('committed');
+        say("I hope this made you smile 😊", 999999);
+        break;
+      case 'level4':
+        setDogState('sit');
+        centerDogFor('level4');
+        say("Watch closely, then copy the pattern!", 3200);
+        startMemoryGame();
+        break;
+      case 'level5':
+        setDogState('sit');
+        centerDogFor('level5');
+        say("I brought you something 💌", 3000);
+        resetPoemScene();
+        break;
+      case 'level6':
+        setDogState('sit');
+        centerDogFor('level6');
+        say("This is the important part...", 3200);
+        break;
+    }
+  }
+
+  // Positions Buddy per-scene (via inline style, since #dog-stage default is centered/bottom)
+  function centerDogFor(scene) {
+    dogStage.style.left = '50%';
+    dogStage.style.bottom = '';
+    dogStage.style.transform = 'translateX(-50%)';
+    if (scene === 'level1') {
+      dogStage.style.bottom = '8vh';
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     2. BUDDY: STATES, SPEECH, HEARTS, PAW PRINTS, IDLE BEHAVIOUR
+  --------------------------------------------------------------------- */
+  const STATES = ['idle', 'happy', 'jump', 'run', 'sit', 'sleep'];
+
+  function setDogState(state) {
+    STATES.forEach((s) => dogStage.classList.remove(`state-${s}`));
+    if (state !== 'idle') dogStage.classList.add(`state-${state}`);
+    resetIdleTimer();
+  }
+
+  let speechTimer = null;
+  function say(text, duration = 2600) {
+    speechText.textContent = text;
+    speechBubble.classList.add('show');
+    clearTimeout(speechTimer);
+    if (duration < 999999) {
+      speechTimer = setTimeout(() => speechBubble.classList.remove('show'), duration);
+    }
+  }
+  function hideSpeech() {
+    speechBubble.classList.remove('show');
+  }
+
+  function popHearts(count = 6) {
+    for (let i = 0; i < count; i++) {
+      const h = document.createElement('span');
+      h.className = 'heart-pop';
+      h.textContent = pick(['💗', '💕', '💖', '✨']);
+      h.style.setProperty('--dx', `${rand(-70, 70)}px`);
+      h.style.left = `${50 + rand(-10, 10)}%`;
+      h.style.animationDelay = `${i * 0.06}s`;
+      heartsLayer.appendChild(h);
+      setTimeout(() => h.remove(), 1600 + i * 60);
+    }
+  }
+
+  function dropPawPrint(x, y, flip) {
+    const p = document.createElement('span');
+    p.className = 'paw-print';
+    p.textContent = '🐾';
+    p.style.left = `${x}px`;
+    p.style.top = `${y}px`;
+    p.style.transform = `scale(${flip ? -1 : 1},1)`;
+    pawTrailLayer.appendChild(p);
+    setTimeout(() => p.remove(), 1200);
+  }
+
+  // Idle -> sleep after inactivity
+  let idleTimer = null;
+  function resetIdleTimer() {
+    clearTimeout(idleTimer);
+    if (dogStage.classList.contains('state-sleep')) {
+      dogStage.classList.remove('state-sleep');
+    }
+    idleTimer = setTimeout(() => {
+      // only nap during calm scenes
+      if (['intro', 'level3'].includes(currentScene)) {
+        dogStage.classList.add('state-sleep');
+      }
+    }, 14000);
+  }
+  resetIdleTimer();
+  ['pointerdown', 'pointermove', 'keydown'].forEach((evt) =>
+    document.addEventListener(evt, () => {
+      if (dogStage.classList.contains('state-sleep')) resetIdleTimer();
+    }, { passive: true })
+  );
+
+  // Subtle "follow cursor" head tilt during idle
+  document.addEventListener('pointermove', (e) => {
+    if (currentScene !== 'intro') return;
+    const cx = window.innerWidth / 2;
+    const tilt = Math.max(-10, Math.min(10, (e.clientX - cx) / cx * 10));
+    dogStage.style.setProperty('--cursor-tilt', `${tilt}deg`);
+  });
+
+  /* ---------------------------------------------------------------------
+     3. INTRO: PET ME BUTTON
+  --------------------------------------------------------------------- */
+  $('#btn-pet-me').addEventListener('click', () => {
+    ensureAudio();
+    setDogState('jump');
+    popHearts(8);
+    say("Yippee! Let's go 🐾", 1800);
+    setTimeout(() => {
+      goToScene('level1');
+    }, 1000);
+  });
+
+  /* ---------------------------------------------------------------------
+     4. LEVEL 1 — FETCH GAME
+  --------------------------------------------------------------------- */
+  const fetchArea = $('#fetch-area');
+  const ball = $('#tennis-ball');
+  const throwCountEl = $('#throw-count');
+  let throws = 0;
+  let fetching = false;
+  let dragging = false;
+  let dragOffset = { x: 0, y: 0 };
+
+  function resetFetchGame() {
+    throws = 0;
+    throwCountEl.textContent = '0';
+    fetching = false;
+    ball.style.left = '50%';
+    ball.style.top = '50%';
+    ball.classList.remove('dragging');
+  }
+
+  function ballPointerDown(e) {
+    if (fetching) return;
+    dragging = true;
+    ball.classList.add('dragging');
+    ball.setPointerCapture(e.pointerId);
+    const rect = ball.getBoundingClientRect();
+    dragOffset.x = e.clientX - rect.left - rect.width / 2;
+    dragOffset.y = e.clientY - rect.top - rect.height / 2;
+  }
+
+  function ballPointerMove(e) {
+    if (!dragging) return;
+    const areaRect = fetchArea.getBoundingClientRect();
+    let x = e.clientX - areaRect.left - dragOffset.x;
+    let y = e.clientY - areaRect.top - dragOffset.y;
+    x = Math.max(20, Math.min(areaRect.width - 20, x));
+    y = Math.max(20, Math.min(areaRect.height - 20, y));
+    ball.style.left = `${x}px`;
+    ball.style.top = `${y}px`;
+  }
+
+  function ballPointerUp(e) {
+    if (!dragging) return;
+    dragging = false;
+    ball.classList.remove('dragging');
+    throwFetch();
+  }
+
+  ball.addEventListener('pointerdown', ballPointerDown);
+  window.addEventListener('pointermove', ballPointerMove);
+  window.addEventListener('pointerup', ballPointerUp);
+
+  function throwFetch() {
+    fetching = true;
+    setDogState('run');
+    say(pick(["I'll get it!", "Fetching!", "On my way!"]), 1400);
+
+    const areaRect = fetchArea.getBoundingClientRect();
+    const ballRect = ball.getBoundingClientRect();
+    const ballX = ballRect.left + ballRect.width / 2;
+    const ballY = ballRect.top + ballRect.height / 2;
+    const startLeft = window.innerWidth / 2;
+
+    animateDogRunTo(ballX, () => {
+      // "grab" the ball
+      setDogState('happy');
+      popHearts(2);
+      spawnPaws(ballX, ballY);
+      setTimeout(() => {
+        setDogState('run');
+        animateDogRunTo(startLeft, () => {
+          setDogState('sit');
+          fetching = false;
+          ball.style.left = '50%';
+          ball.style.top = '50%';
+          throws++;
+          throwCountEl.textContent = String(throws);
+          if (throws >= 3) {
+            say("Yay, three catches! You're a great thrower 🎾", 2600);
+            popHearts(6);
+            setTimeout(() => goToScene('level2'), 1800);
+          } else {
+            say('Throw it again!', 1600);
+          }
+        });
+      }, 500);
+    });
+  }
+
+  // Animate #dog-stage horizontally toward a target viewport X using transform, with paw prints
+  function animateDogRunTo(targetX, onDone) {
+    const stageRectStart = dogStage.getBoundingClientRect();
+    const startX = stageRectStart.left + stageRectStart.width / 2;
+    const distance = targetX - startX;
+    const duration = Math.min(1200, Math.max(500, Math.abs(distance) * 2.2));
+    const startTime = performance.now();
+    const baseLeftPercent = 50; // dogStage is left:50% based
+
+    // convert distance to px offset from center via transform, keep bottom position
+    function frame(now) {
+      const t = Math.min(1, (now - startTime) / duration);
+      const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; // easeInOutQuad
+      const currentOffset = distance * eased;
+      dogStage.style.transform = `translateX(calc(-50% + ${currentOffset}px)) scaleX(${distance < 0 ? -1 : 1})`;
+
+      if (Math.random() < 0.35) {
+        const r = dogStage.getBoundingClientRect();
+        dropPawPrint(r.left + r.width / 2 + rand(-10, 10), r.bottom - 10, distance < 0);
+      }
+
+      if (t < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        onDone && onDone();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function spawnPaws(x, y) {
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => dropPawPrint(x + rand(-14, 14), y + rand(-8, 8), false), i * 80);
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     5. LEVEL 2 — TREAT GAME
+  --------------------------------------------------------------------- */
+  const treatCards = $$('.treat-card');
+  const treatReaction = $('#treat-reaction');
+  const correctTreatIndex = 1; // Peanut Butter Biscuit
+  let treatSolved = false;
+
+  const wrongReactions = [
+    "Buddy sniffs it... and walks away. Not this one!",
+    "Buddy gives you a polite 'no thank you' look.",
+    "Buddy nudges it aside gently. Try again!",
+  ];
+
+  function resetTreatGame() {
+    treatSolved = false;
+    treatReaction.textContent = '';
+    treatCards.forEach((c) => c.classList.remove('correct', 'wrong'));
+  }
+
+  treatCards.forEach((card) => {
+    card.addEventListener('click', () => {
+      if (treatSolved) return;
+      const idx = Number(card.dataset.treat);
+      if (idx === correctTreatIndex) {
+        treatSolved = true;
+        card.classList.add('correct');
+        setDogState('happy');
+        popHearts(6);
+        treatReaction.textContent = "That's exactly it! Buddy's tail is a blur! 🥜✨";
+        say('My favorite! You know me so well!', 2600);
+        setTimeout(() => goToScene('level3'), 2000);
+      } else {
+        card.classList.add('wrong');
+        setDogState('idle');
+        treatReaction.textContent = pick(wrongReactions);
+        say(pick(["Hehe, nope!", "Not quite!", "Try another one!"]), 1400);
+        setTimeout(() => card.classList.remove('wrong'), 500);
+      }
+    });
+  });
+
+  /* ---------------------------------------------------------------------
+     6. LEVEL 3 — RELATIONSHIP QUESTION
+  --------------------------------------------------------------------- */
+  $$('#scene-level3 .choice-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const choice = btn.dataset.choice;
+      if (choice === 'committed') {
+        setDogState('sit');
+        say("That's okay 💛", 1800);
+        setTimeout(() => goToScene('committed'), 900);
+      } else if (choice === 'single') {
+        setDogState('happy');
+        popHearts(4);
+        say('Yay! Let\'s keep going then!', 1800);
+        setTimeout(() => goToScene('level4'), 1000);
+      } else {
+        setDogState('idle');
+        say("That's okay! Let's just keep having fun 🐾", 2000);
+        setTimeout(() => goToScene('level4'), 1200);
+      }
+    });
+  });
+
+  $('#btn-restart-1').addEventListener('click', restartAdventure);
+
+  /* ---------------------------------------------------------------------
+     7. LEVEL 4 — MEMORY PUZZLE (Simon-style paw sequence)
+  --------------------------------------------------------------------- */
+  const memoryGrid = $('#memory-grid');
+  const memoryHint = $('#memory-hint');
+  let sequence = [];
+  let playerStep = 0;
+  let showingSequence = false;
+  let sequenceLength = 4;
+
+  function buildMemoryGrid() {
+    memoryGrid.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+      const tile = document.createElement('button');
+      tile.className = 'paw-tile';
+      tile.textContent = '🐾';
+      tile.dataset.index = String(i);
+      tile.addEventListener('click', () => onTileClick(i, tile));
+      memoryGrid.appendChild(tile);
+    }
+  }
+
+  function startMemoryGame() {
+    buildMemoryGrid();
+    sequence = Array.from({ length: sequenceLength }, () => Math.floor(Math.random() * 9));
+    playerStep = 0;
+    showingSequence = true;
+    memoryHint.textContent = 'Watch closely...';
+    setTimeout(() => playSequence(), 700);
+  }
+
+  function playSequence() {
+    const tiles = $$('.paw-tile', memoryGrid);
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i > 0) tiles[sequence[i - 1]].classList.remove('lit');
+      if (i >= sequence.length) {
+        clearInterval(interval);
+        showingSequence = false;
+        memoryHint.textContent = 'Now repeat the pattern!';
+        return;
+      }
+      tiles[sequence[i]].classList.add('lit');
+      i++;
+    }, 650);
+  }
+
+  function onTileClick(index, tileEl) {
+    if (showingSequence) return;
+    if (index === sequence[playerStep]) {
+      tileEl.classList.add('correct-flash');
+      setTimeout(() => tileEl.classList.remove('correct-flash'), 300);
+      playerStep++;
+      if (playerStep === sequence.length) {
+        memoryHint.textContent = 'Perfect memory! 🎉';
+        setDogState('happy');
+        popHearts(6);
+        say('Wow, great memory!', 2000);
+        setTimeout(() => goToScene('level5'), 1600);
+      }
+    } else {
+      tileEl.classList.add('wrong-flash');
+      setTimeout(() => tileEl.classList.remove('wrong-flash'), 300);
+      memoryHint.textContent = "Oops, that's not it — watch again!";
+      say('Almost! Watch again.', 1600);
+      playerStep = 0;
+      showingSequence = true;
+      setTimeout(() => playSequence(), 900);
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     8. LEVEL 5 — POEM REVEAL
+  --------------------------------------------------------------------- */
+  const envelope = $('#envelope');
+  const envelopeHint = $('#envelope-hint');
+  const poemBox = $('#poem-box');
+  const poemTextEl = $('#poem-text');
+
+  const poemLines = [
+    "Golden fur and gentle eyes,",
+    "A wagging tail that never lies.",
+    "I came to fetch, to play, to run —",
+    "but really, I came to tell someone:",
+    "",
+    "You make ordinary days feel bright,",
+    "like sunshine wrapped in soft moonlight.",
+    "So here's my heart, paws and all —",
+    "I'm glad you answered Buddy's call. 🐾💛",
+  ].join('\n');
+
+  function resetPoemScene() {
+    envelope.classList.remove('open');
+    poemBox.hidden = true;
+    poemTextEl.textContent = '';
+    envelopeHint.textContent = 'Tap the envelope to open it';
+    envelope.onclick = openEnvelope;
+  }
+
+  function openEnvelope() {
+    envelope.onclick = null;
+    envelope.classList.add('open');
+    envelopeHint.textContent = '';
+    setDogState('happy');
+    popHearts(4);
+    ensureAudio();
+    playAmbientPiano();
+    setTimeout(() => {
+      poemBox.hidden = false;
+      typewriter(poemTextEl, poemLines, 38, () => {
+        setTimeout(() => goToScene('level6'), 1400);
+      });
+    }, 700);
+  }
+
+  function typewriter(el, text, speed, onDone) {
+    let i = 0;
+    el.textContent = '';
+    const timer = setInterval(() => {
+      el.textContent += text[i];
+      i++;
+      if (i >= text.length) {
+        clearInterval(timer);
+        onDone && onDone();
+      }
+    }, speed);
+  }
+
+  /* ---------------------------------------------------------------------
+     9. LEVEL 6 — FINAL SCREEN
+  --------------------------------------------------------------------- */
+  const finalReaction = $('#final-reaction');
+  const finalResponses = {
+    yes: "Yay! 😊 Buddy is doing zoomies of joy right now. Coffee it is!",
+    maybe: "That's okay 🤍 No pressure at all — Buddy will just be happy to know you.",
+    think: "Take all the time you need 🌸 Buddy will be here, tail wagging, whenever you're ready.",
+  };
+
+  $$('#scene-level6 .choice-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.final;
+      finalReaction.textContent = finalResponses[key] || '';
+      if (key === 'yes') {
+        setDogState('happy');
+        popHearts(10);
+        say('Best. Day. Ever!! 🐾💛', 3000);
+      } else if (key === 'maybe') {
+        setDogState('sit');
+        say('Okay! I\'ll be right here 🤍', 2600);
+      } else {
+        setDogState('idle');
+        say('Take your time 🌸', 2600);
+      }
+    });
+  });
+
+  /* ---------------------------------------------------------------------
+     10. RESTART
+  --------------------------------------------------------------------- */
+  function restartAdventure() {
+    resetFetchGame();
+    resetTreatGame();
+    goToScene('intro');
+  }
+
+  /* ---------------------------------------------------------------------
+     11. AMBIENT BACKGROUND: CLOUDS, PETALS, SPARKLES
+  --------------------------------------------------------------------- */
+  function buildClouds() {
+    const layer = $('#clouds');
+    const count = window.innerWidth < 640 ? 3 : 5;
+    for (let i = 0; i < count; i++) {
+      const c = document.createElement('div');
+      c.className = 'cloud';
+      const w = rand(90, 200);
+      const h = w * 0.4;
+      c.style.width = `${w}px`;
+      c.style.height = `${h}px`;
+      c.style.top = `${rand(4, 45)}%`;
+      c.style.setProperty('--w', w);
+      c.style.animationDuration = `${rand(40, 80)}s`;
+      c.style.animationDelay = `-${rand(0, 60)}s`;
+      // pseudo bumps via inline style vars read by ::before/::after is tricky; use box-shadow instead
+      c.style.boxShadow = `
+        ${w * 0.25}px ${-h * 0.35}px 0 ${-h * 0.1}px #fff,
+        ${w * 0.55}px ${-h * 0.15}px 0 ${-h * 0.2}px #fff,
+        ${w * 0.15}px ${h * 0.1}px 0 ${-h * 0.15}px #fff
+      `;
+      layer.appendChild(c);
+    }
+  }
+
+  function buildPetals() {
+    const layer = $('#petals');
+    const count = window.innerWidth < 640 ? 14 : 26;
+    for (let i = 0; i < count; i++) {
+      spawnPetal(layer, true);
+    }
+  }
+  function spawnPetal(layer, randomDelay) {
+    const p = document.createElement('span');
+    p.className = 'petal';
+    p.textContent = pick(['🌸', '🌸', '🌸', '💮']);
+    p.style.left = `${rand(0, 100)}%`;
+    p.style.fontSize = `${rand(0.9, 1.7)}rem`;
+    const fallDur = rand(9, 18);
+    const swayDur = rand(3, 6);
+    p.style.animationDuration = `${fallDur}s, ${swayDur}s`;
+    p.style.animationDelay = randomDelay ? `-${rand(0, fallDur)}s, -${rand(0, swayDur)}s` : `0s, 0s`;
+    layer.appendChild(p);
+  }
+
+  function buildSparkles() {
+    const layer = $('#sparkles');
+    const count = window.innerWidth < 640 ? 12 : 22;
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement('span');
+      s.className = 'sparkle';
+      const size = rand(3, 8);
+      s.style.width = `${size}px`;
+      s.style.height = `${size}px`;
+      s.style.left = `${rand(0, 100)}%`;
+      s.style.top = `${rand(0, 100)}%`;
+      s.style.animationDuration = `${rand(2, 5)}s`;
+      s.style.animationDelay = `-${rand(0, 5)}s`;
+      layer.appendChild(s);
+    }
+  }
+
+  buildClouds();
+  buildPetals();
+  buildSparkles();
+
+  /* ---------------------------------------------------------------------
+     12. SOFT AMBIENT AUDIO (procedural, no external files)
+  --------------------------------------------------------------------- */
+  let audioCtx = null;
+  let soundOn = false;
+  let ambientTimer = null;
+  const soundToggleBtn = $('#sound-toggle');
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function playNote(freq, time, dur = 1.1, gainPeak = 0.05) {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, time);
+    gain.gain.linearRampToValueAtTime(gainPeak, time + 0.15);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(time);
+    osc.stop(time + dur + 0.1);
+  }
+
+  const scale = [523.25, 587.33, 659.25, 783.99, 880.0]; // C major pentatonic-ish, soft & piano-like
+
+  function playAmbientPiano() {
+    if (!soundOn || !audioCtx) return;
+    scheduleArpeggio();
+    clearInterval(ambientTimer);
+    ambientTimer = setInterval(scheduleArpeggio, 4200);
+  }
+
+  function scheduleArpeggio() {
+    if (!soundOn || !audioCtx) return;
+    const now = audioCtx.currentTime;
+    let t = now;
+    const notes = [pick(scale), pick(scale), pick(scale), pick(scale)];
+    notes.forEach((f, i) => {
+      playNote(f, t + i * 0.55, 1.3, 0.04);
+    });
+  }
+
+  soundToggleBtn.addEventListener('click', () => {
+    ensureAudio();
+    soundOn = !soundOn;
+    soundToggleBtn.textContent = soundOn ? '🔊' : '🔇';
+    if (soundOn) {
+      scheduleArpeggio();
+      clearInterval(ambientTimer);
+      ambientTimer = setInterval(scheduleArpeggio, 4200);
+    } else {
+      clearInterval(ambientTimer);
+    }
+  });
+
+  /* ---------------------------------------------------------------------
+     13. INIT
+  --------------------------------------------------------------------- */
+  updateProgress('intro');
+  setDogState('idle');
+})();
