@@ -1,43 +1,197 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Tiny Adventure 🐶</title>
 
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Cute Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<title>Golden Adventure</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+
 </head>
 
 <body>
 
-<div class="background"></div>
+<div class="sky"></div>
+
+<div class="petals"></div>
 
 <div class="container">
 
-    <div class="dog">
-        🐶
-    </div>
+<div class="dog-wrapper">
 
-    <h1>
-        Hi There 🌸
-    </h1>
+<svg id="buddy" width="320" height="300" viewBox="0 0 320 300">
 
-    <p>
-        I found something today...
-        <br><br>
-        Would you come on a tiny adventure with me?
-    </p>
+<!-- Tail -->
 
-    <button id="startBtn">
-        Pet Me 🐾
-    </button>
+<g id="tail">
+
+<ellipse cx="235" cy="170"
+rx="18"
+ry="55"
+fill="#d99c58"
+transform="rotate(40 235 170)"/>
+
+</g>
+
+<!-- Body -->
+
+<ellipse
+cx="160"
+cy="170"
+rx="80"
+ry="55"
+fill="#e3ab67"/>
+
+<!-- Belly -->
+
+<ellipse
+cx="160"
+cy="190"
+rx="55"
+ry="28"
+fill="#f7d7a7"/>
+
+<!-- Head -->
+
+<circle
+cx="105"
+cy="110"
+r="55"
+fill="#e3ab67"/>
+
+<!-- Left Ear -->
+
+<ellipse
+id="earLeft"
+cx="62"
+cy="92"
+rx="18"
+ry="42"
+fill="#c98945"
+transform="rotate(-18 62 92)"/>
+
+<!-- Right Ear -->
+
+<ellipse
+id="earRight"
+cx="148"
+cy="92"
+rx="18"
+ry="42"
+fill="#c98945"
+transform="rotate(18 148 92)"/>
+
+<!-- Eyes -->
+
+<ellipse
+class="eye"
+cx="88"
+cy="108"
+rx="4"
+ry="8"
+fill="#222"/>
+
+<ellipse
+class="eye"
+cx="122"
+cy="108"
+rx="4"
+ry="8"
+fill="#222"/>
+
+<!-- Nose -->
+
+<ellipse
+cx="105"
+cy="130"
+rx="8"
+ry="6"
+fill="#333"/>
+
+<!-- Mouth -->
+
+<path
+d="M97 142 Q105 150 113 142"
+stroke="#333"
+stroke-width="3"
+fill="none"
+stroke-linecap="round"/>
+
+<!-- Tongue -->
+
+<ellipse
+cx="105"
+cy="148"
+rx="6"
+ry="8"
+fill="#ff91aa"/>
+
+<!-- Front Legs -->
+
+<rect
+x="118"
+y="205"
+width="16"
+height="52"
+rx="8"
+fill="#d99c58"/>
+
+<rect
+x="145"
+y="205"
+width="16"
+height="52"
+rx="8"
+fill="#d99c58"/>
+
+<!-- Back Legs -->
+
+<rect
+x="183"
+y="205"
+width="16"
+height="52"
+rx="8"
+fill="#d99c58"/>
+
+<rect
+x="208"
+y="205"
+width="16"
+height="52"
+rx="8"
+fill="#d99c58"/>
+
+</svg>
+
+</div>
+
+<h1>Hi 🌸</h1>
+
+<p>
+
+I found something today...
+
+<br><br>
+
+Would you come on a tiny adventure with me?
+
+</p>
+
+<button id="startBtn">
+
+Pet Me 🐾
+
+</button>
 
 </div>
 
 <script src="script.js"></script>
 
 </body>
+
 </html>
