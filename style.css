@@ -1,9 +1,4 @@
-/* =====================================
-   GOLDEN ADVENTURE
-   PART 1
-===================================== */
-
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
+/* ========= GOLDEN ADVENTURE ========= */
 
 *{
 margin:0;
@@ -14,67 +9,44 @@ box-sizing:border-box;
 body{
 
 font-family:'Quicksand',sans-serif;
+
 height:100vh;
+
 overflow:hidden;
 
 display:flex;
+
 justify-content:center;
+
 align-items:center;
 
 background:linear-gradient(
 180deg,
-#ffdce7 0%,
-#ffeedd 45%,
-#fff8ef 100%);
-
-position:relative;
+#ffe0ea 0%,
+#fff0d8 45%,
+#fffaf2 100%);
 
 }
 
 
-/* ---------- Animated Background ---------- */
+/* ---------- SKY ---------- */
 
-body::before{
-
-content:"";
+.sky{
 
 position:absolute;
 
-width:200%;
+width:100%;
 
-height:200%;
+height:100%;
 
-background:
+overflow:hidden;
 
-radial-gradient(circle,#ffffff70 2px,transparent 3px),
-radial-gradient(circle,#ffffff50 1px,transparent 2px);
-
-background-size:120px 120px;
-
-animation:bgmove 40s linear infinite;
-
-opacity:.7;
-
-}
-
-@keyframes bgmove{
-
-0%{
-
-transform:translateY(0);
-
-}
-
-100%{
-
-transform:translateY(-120px);
-
-}
+z-index:0;
 
 }
 
 
-/* ---------- Container ---------- */
+/* ---------- CONTAINER ---------- */
 
 .container{
 
@@ -84,17 +56,18 @@ z-index:5;
 
 text-align:center;
 
-animation:fadeUp 1.2s ease;
+animation:fade 1s ease;
 
 }
 
-@keyframes fadeUp{
+
+@keyframes fade{
 
 from{
 
 opacity:0;
 
-transform:translateY(50px);
+transform:translateY(40px);
 
 }
 
@@ -109,67 +82,251 @@ transform:translateY(0);
 }
 
 
-/* ---------- Title ---------- */
+/* ---------- DOG ---------- */
 
-h1{
+.dog-wrapper{
 
-font-size:56px;
+width:340px;
 
-font-weight:700;
+margin:auto;
 
-color:#8b5e3c;
+animation:float 3s ease-in-out infinite;
 
-margin-top:20px;
-
-text-shadow:
-
-0 3px 10px rgba(255,255,255,.7);
+cursor:pointer;
 
 }
 
 
-/* ---------- Paragraph ---------- */
+#buddy{
+
+overflow:visible;
+
+}
+
+
+@keyframes float{
+
+0%{
+
+transform:translateY(0px);
+
+}
+
+50%{
+
+transform:translateY(-12px);
+
+}
+
+100%{
+
+transform:translateY(0px);
+
+}
+
+}
+
+
+/* ---------- BODY ---------- */
+
+#buddy circle,
+#buddy ellipse,
+#buddy rect,
+#buddy path{
+
+transition:.35s;
+
+}
+
+
+/* ---------- TAIL ---------- */
+
+#tail{
+
+transform-origin:220px 175px;
+
+animation:wag .35s infinite alternate;
+
+}
+
+@keyframes wag{
+
+from{
+
+transform:rotate(15deg);
+
+}
+
+to{
+
+transform:rotate(-15deg);
+
+}
+
+}
+
+
+/* ---------- EARS ---------- */
+
+#earLeft{
+
+transform-origin:center;
+
+animation:leftEar 2s infinite;
+
+}
+
+#earRight{
+
+transform-origin:center;
+
+animation:rightEar 2s infinite;
+
+}
+
+@keyframes leftEar{
+
+0%{
+
+transform:rotate(-18deg);
+
+}
+
+50%{
+
+transform:rotate(-24deg);
+
+}
+
+100%{
+
+transform:rotate(-18deg);
+
+}
+
+}
+
+@keyframes rightEar{
+
+0%{
+
+transform:rotate(18deg);
+
+}
+
+50%{
+
+transform:rotate(24deg);
+
+}
+
+100%{
+
+transform:rotate(18deg);
+
+}
+
+}
+
+
+/* ---------- EYES ---------- */
+
+.eye{
+
+transform-origin:center;
+
+animation:blink 5s infinite;
+
+}
+
+@keyframes blink{
+
+0%{
+
+transform:scaleY(1);
+
+}
+
+47%{
+
+transform:scaleY(1);
+
+}
+
+50%{
+
+transform:scaleY(.05);
+
+}
+
+53%{
+
+transform:scaleY(1);
+
+}
+
+100%{
+
+transform:scaleY(1);
+
+}
+
+}
+
+
+/* ---------- TITLE ---------- */
+
+h1{
+
+margin-top:20px;
+
+font-size:54px;
+
+color:#7d5532;
+
+}
+
 
 p{
 
-margin-top:20px;
+margin-top:18px;
 
 font-size:22px;
 
 line-height:1.8;
 
-color:#5b5b5b;
+color:#555;
 
 max-width:600px;
 
 }
 
 
-/* ---------- Button ---------- */
+/* ---------- BUTTON ---------- */
 
 button{
 
-margin-top:45px;
+margin-top:40px;
 
-padding:18px 48px;
-
-font-size:22px;
+padding:18px 50px;
 
 border:none;
 
 border-radius:999px;
 
-cursor:pointer;
-
-background:#ff93b5;
-
-color:white;
+font-size:22px;
 
 font-weight:bold;
 
+cursor:pointer;
+
+background:#ff8fb8;
+
+color:white;
+
 box-shadow:
 
-0 12px 30px rgba(255,130,180,.35);
+0 12px 25px rgba(255,120,170,.35);
 
 transition:.35s;
 
@@ -181,97 +338,67 @@ button:hover{
 
 transform:scale(1.08);
 
-background:#ff76a0;
+background:#ff6ea4;
 
 }
 
 button:active{
 
-transform:scale(.96);
+transform:scale(.95);
 
 }
+
 
 @keyframes pulse{
 
 0%{
 
-box-shadow:0 0 0 rgba(255,130,180,.4);
+box-shadow:0 0 0 rgba(255,150,190,.2);
 
 }
 
 50%{
 
-box-shadow:0 0 35px rgba(255,130,180,.6);
+box-shadow:0 0 40px rgba(255,130,180,.55);
 
 }
 
 100%{
 
-box-shadow:0 0 0 rgba(255,130,180,.3);
+box-shadow:0 0 0 rgba(255,150,190,.2);
 
 }
 
 }
 
 
-/* ---------- Floating Hearts ---------- */
+/* ---------- PETALS ---------- */
 
-.heart{
+.petals{
 
 position:absolute;
 
-font-size:22px;
+inset:0;
 
-animation:floatHeart 10s linear infinite;
+pointer-events:none;
 
-opacity:.55;
-
-}
-
-@keyframes floatHeart{
-
-0%{
-
-transform:translateY(100vh) rotate(0);
-
-opacity:0;
+overflow:hidden;
 
 }
-
-15%{
-
-opacity:.6;
-
-}
-
-100%{
-
-transform:translateY(-120vh) rotate(360deg);
-
-opacity:0;
-
-}
-
-}
-
-
-/* ---------- Petals ---------- */
 
 .petal{
 
 position:absolute;
 
-width:18px;
+width:16px;
 
-height:18px;
+height:16px;
 
 background:#ffc8d7;
 
-border-radius:
+border-radius:60% 40% 60% 40%;
 
-60% 40% 60% 40%;
-
-opacity:.8;
+opacity:.85;
 
 animation:fall linear infinite;
 
@@ -283,7 +410,7 @@ animation:fall linear infinite;
 
 transform:
 
-translateY(-100px)
+translateY(-80px)
 
 rotate(0deg);
 
@@ -295,95 +422,218 @@ transform:
 
 translateY(110vh)
 
-translateX(120px)
+translateX(100px)
 
 rotate(720deg);
 
 }
 
 }
+/* ========= PART B ========= */
 
+/* Breathing */
 
-/* ---------- Clouds ---------- */
+#buddy{
+    animation:breathe 3s ease-in-out infinite;
+    transform-origin:center bottom;
+}
 
-.cloud{
+@keyframes breathe{
 
-position:absolute;
+0%{
+transform:scale(1);
+}
 
-background:white;
+50%{
+transform:scale(1.02,.98);
+}
 
-width:180px;
-
-height:60px;
-
-border-radius:100px;
-
-opacity:.5;
-
-animation:cloud 50s linear infinite;
+100%{
+transform:scale(1);
+}
 
 }
 
-.cloud::before{
 
-content:"";
+/* Head */
 
-position:absolute;
+#buddy circle:first-of-type{
 
-width:70px;
+transform-origin:105px 110px;
 
-height:70px;
-
-background:white;
-
-border-radius:50%;
-
-left:25px;
-
-top:-30px;
+animation:headMove 3s ease-in-out infinite;
 
 }
 
-.cloud::after{
+@keyframes headMove{
 
-content:"";
+0%{
+transform:rotate(0deg);
+}
 
-position:absolute;
+25%{
+transform:rotate(-2deg);
+}
 
-width:90px;
+50%{
+transform:rotate(2deg);
+}
 
-height:90px;
+75%{
+transform:rotate(-1deg);
+}
 
-background:white;
-
-border-radius:50%;
-
-right:20px;
-
-top:-45px;
+100%{
+transform:rotate(0deg);
+}
 
 }
 
-@keyframes cloud{
+
+/* Legs */
+
+#buddy rect{
+
+animation:legBounce 1.8s ease-in-out infinite;
+
+}
+
+@keyframes legBounce{
+
+0%,100%{
+
+transform:translateY(0px);
+
+}
+
+50%{
+
+transform:translateY(3px);
+
+}
+
+}
+
+
+/* Nose */
+
+#buddy ellipse:nth-of-type(6){
+
+animation:nose 2s infinite;
+
+transform-origin:center;
+
+}
+
+@keyframes nose{
+
+0%,100%{
+
+transform:scale(1);
+
+}
+
+50%{
+
+transform:scale(1.15);
+
+}
+
+}
+
+
+/* Tongue */
+
+#buddy ellipse:last-of-type{
+
+animation:tongue 1s infinite alternate;
+
+}
+
+@keyframes tongue{
 
 from{
 
-left:-250px;
+transform:translateY(0);
 
 }
 
 to{
 
-left:120%;
+transform:translateY(3px);
 
 }
 
 }
 
 
-/* ---------- Sparkles ---------- */
+/* Hover */
 
-.sparkle{
+.dog-wrapper:hover{
+
+transform:scale(1.08);
+
+}
+
+
+/* Glow */
+
+.dog-wrapper::after{
+
+content:"";
+
+position:absolute;
+
+width:240px;
+
+height:40px;
+
+background:rgba(0,0,0,.12);
+
+filter:blur(15px);
+
+border-radius:50%;
+
+left:50%;
+
+bottom:-10px;
+
+transform:translateX(-50%);
+
+animation:shadow 3s ease-in-out infinite;
+
+}
+
+@keyframes shadow{
+
+0%{
+
+transform:translateX(-50%) scale(1);
+
+opacity:.15;
+
+}
+
+50%{
+
+transform:translateX(-50%) scale(.85);
+
+opacity:.08;
+
+}
+
+100%{
+
+transform:translateX(-50%) scale(1);
+
+opacity:.15;
+
+}
+
+
+/* Sparkles */
+
+.spark{
 
 position:absolute;
 
@@ -395,21 +645,19 @@ background:white;
 
 border-radius:50%;
 
-box-shadow:
+box-shadow:0 0 10px white;
 
-0 0 10px white;
-
-animation:twinkle 2s infinite;
+animation:spark 2s infinite;
 
 }
 
-@keyframes twinkle{
+@keyframes spark{
 
 0%{
 
 opacity:.2;
 
-transform:scale(.5);
+transform:scale(.4);
 
 }
 
@@ -417,7 +665,7 @@ transform:scale(.5);
 
 opacity:1;
 
-transform:scale(1.6);
+transform:scale(1.5);
 
 }
 
@@ -425,7 +673,50 @@ transform:scale(1.6);
 
 opacity:.2;
 
-transform:scale(.5);
+transform:scale(.4);
+
+}
+
+}
+
+
+/* Mobile */
+
+@media(max-width:700px){
+
+h1{
+
+font-size:38px;
+
+}
+
+p{
+
+font-size:18px;
+
+padding:0 20px;
+
+}
+
+button{
+
+font-size:18px;
+
+padding:15px 36px;
+
+}
+
+.dog-wrapper{
+
+width:260px;
+
+}
+
+#buddy{
+
+width:260px;
+
+height:auto;
 
 }
 
