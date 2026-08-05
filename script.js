@@ -19,6 +19,11 @@
   const speechText = $('#speech-text');
   const heartsLayer = $('#hearts');
   const pawTrailLayer = $('#paw-trail');
+  const fxLayer = $('#fx-layer');
+  const cursorTrailLayer = $('#cursor-trail');
+
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
   /* ---------------------------------------------------------------------
      1. SCENE MANAGER
@@ -47,6 +52,10 @@
     requestAnimationFrame(() => {
       next.classList.add('active');
     });
+
+    if (!prefersReducedMotion) {
+      sparkleBurst(window.innerWidth / 2, window.innerHeight / 2, 10);
+    }
 
     currentScene = name;
     body.className = `scene-${name}`;
@@ -876,8 +885,141 @@
   });
 
   /* ---------------------------------------------------------------------
+     12b. POLISH: MAGIC PARTICLE BURSTS, CURSOR SPARKLES, CARD TILT, RIPPLES
+  --------------------------------------------------------------------- */
+  function sparkleBurst(x, y, count = 8) {
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement('span');
+      s.className = 'burst-sparkle';
+      const angle = (Math.PI * 2 * i) / count + rand(-0.3, 0.3);
+      const dist = rand(40, 120);
+      s.style.left = `${x}px`;
+      s.style.top = `${y}px`;
+      s.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+      s.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
+      s.style.animationDelay = `${i * 0.02}s`;
+      s.textContent = pick(['✨', '⋆', '·', '💫']);
+      fxLayer.appendChild(s);
+      setTimeout(() => s.remove(), 950);
+    }
+  }
+
+  // Gentle cursor sparkle trail (desktop only, respects reduced motion)
+  if (!prefersReducedMotion && hasFinePointer) {
+    let lastTrailTime = 0;
+    document.addEventListener('pointermove', (e) => {
+      const now = performance.now();
+      if (now - lastTrailTime < 70) return;
+      lastTrailTime = now;
+      const s = document.createElement('span');
+      s.className = 'trail-sparkle';
+      s.textContent = pick(['✨', '⋆', '·']);
+      s.style.left = `${e.clientX}px`;
+      s.style.top = `${e.clientY}px`;
+      cursorTrailLayer.appendChild(s);
+      setTimeout(() => s.remove(), 900);
+    }, { passive: true });
+  }
+
+  // Subtle 3D tilt on glass cards for a premium feel
+  if (!prefersReducedMotion && hasFinePointer) {
+    document.addEventListener('pointermove', (e) => {
+      const card = e.target.closest && e.target.closest('.glass-card');
+      $$('.glass-card.active-tilt').forEach((c) => {
+        if (c !== card) {
+          c.style.setProperty('--tiltX', '0deg');
+          c.style.setProperty('--tiltY', '0deg');
+          c.classList.remove('active-tilt');
+        }
+      });
+      if (!card) return;
+      const rect = card.getBoundingClientRect();
+      const px = (e.clientX - rect.left) / rect.width - 0.5;
+      const py = (e.clientY - rect.top) / rect.height - 0.5;
+      card.style.setProperty('--tiltX', `${(-py * 5).toFixed(2)}deg`);
+      card.style.setProperty('--tiltY', `${(px * 5).toFixed(2)}deg`);
+      card.classList.add('active-tilt');
+    }, { passive: true });
+  }
+
+  // Ripple feedback on interactive elements
+  document.addEventListener('pointerdown', (e) => {
+    const target = e.target.closest('.glow-btn, .choice-btn, .treat-card, .icon-btn, .paw-tile');
+    if (!target) return;
+    const rect = target.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    const size = Math.max(rect.width, rect.height) * 1.4;
+    ripple.style.width = `${size}px`;
+    ripple.style.height = `${size}px`;
+    ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+    ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+    const computedPosition = getComputedStyle(target).position;
+    if (computedPosition === 'static') target.style.position = 'relative';
+    target.style.overflow = target.style.overflow || 'hidden';
+    target.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 700);
+  }, { passive: true });
+
+  /* ---------------------------------------------------------------------
+     12c. PRELOADER + BUDDY'S ENTRANCE WALK-ON
+  --------------------------------------------------------------------- */
+  function hidePreloader() {
+    const pre = $('#preloader');
+    if (!pre) { runIntroEntrance(); return; }
+    pre.classList.add('hide');
+    setTimeout(() => {
+      pre.remove();
+      runIntroEntrance();
+    }, prefersReducedMotion ? 0 : 650);
+  }
+
+  function runIntroEntrance() {
+    if (prefersReducedMotion) {
+      dogStage.classList.remove('pre-entrance');
+      onEnterScene('intro');
+      return;
+    }
+    dogStage.classList.add('state-run');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => dogStage.classList.remove('pre-entrance'));
+    });
+    const settle = () => {
+      dogStage.removeEventListener('transitionend', settle);
+      setDogState('idle');
+      say("Hi 😊\nMy human asked me to show you something.\nWould you come with me?", 999999);
+      if (!prefersReducedMotion) sparkleBurst(window.innerWidth / 2, window.innerHeight * 0.55, 12);
+    };
+    dogStage.addEventListener('transitionend', settle);
+    // safety fallback in case transitionend doesn't fire on some browsers
+    setTimeout(() => {
+      if (dogStage.classList.contains('state-run')) settle();
+    }, 1400);
+  }
+
+  function startPreloaderSequence() {
+    const MIN_VISIBLE = prefersReducedMotion ? 0 : 900;
+    const started = performance.now();
+    const finish = () => {
+      const elapsed = performance.now() - started;
+      setTimeout(hidePreloader, Math.max(0, MIN_VISIBLE - elapsed));
+    };
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(finish).catch(finish);
+    } else {
+      finish();
+    }
+  }
+
+  /* ---------------------------------------------------------------------
      13. INIT
   --------------------------------------------------------------------- */
   updateProgress('intro');
+  dogStage.classList.add('pre-entrance');
   setDogState('idle');
+  if (document.readyState === 'complete') {
+    startPreloaderSequence();
+  } else {
+    window.addEventListener('load', startPreloaderSequence);
+  }
 })();
