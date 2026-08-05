@@ -9,11 +9,24 @@
 </head>
 <body class="scene-intro">
 
+  <!-- ================= PRELOADER ================= -->
+  <div id="preloader">
+    <div class="preloader-inner">
+      <div class="loader-paw">🐾</div>
+      <p>Loading Buddy's Adventure…</p>
+    </div>
+  </div>
+
   <!-- ================= AMBIENT BACKGROUND ================= -->
   <div class="sky"></div>
+  <div class="light-rays" aria-hidden="true"></div>
   <div class="clouds" id="clouds" aria-hidden="true"></div>
   <div class="petals" id="petals" aria-hidden="true"></div>
   <div class="sparkles" id="sparkles" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
+  <div class="cursor-trail" id="cursor-trail" aria-hidden="true"></div>
 
   <!-- ================= SOUND TOGGLE ================= -->
   <button id="sound-toggle" class="icon-btn" aria-label="Toggle sound" title="Toggle soft music">🔇</button>
@@ -31,6 +44,7 @@
 
   <!-- ================= BUDDY THE DOG (persistent character) ================= -->
   <div id="dog-stage">
+    <div class="dog-spotlight" aria-hidden="true"></div>
     <div class="paw-trail" id="paw-trail"></div>
     <div class="speech-bubble" id="speech-bubble"><p id="speech-text"></p></div>
     <div class="hearts" id="hearts"></div>
@@ -186,6 +200,21 @@
           <button class="choice-btn" data-final="think">🌸 Let me think</button>
         </div>
         <p class="reaction-text" id="final-reaction"></p>
+
+        <div class="share-panel" id="share-panel" hidden>
+          <p class="hint">Want to let them know what you picked? Totally up to you 🐾</p>
+          <div class="report-card" id="report-card">
+            <div class="report-emoji">🐾</div>
+            <h3>Buddy's Adventure Report</h3>
+            <ul id="report-list"></ul>
+            <div class="report-footer">delivered with a wagging tail</div>
+          </div>
+          <div class="choice-row">
+            <button class="choice-btn" id="btn-save-image">🖼️ Save as image</button>
+            <button class="choice-btn" id="btn-copy-text">📋 Copy summary</button>
+          </div>
+          <p class="hint" id="share-status"></p>
+        </div>
       </div>
     </section>
 
