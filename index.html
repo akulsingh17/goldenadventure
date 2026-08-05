@@ -1,197 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Golden Adventure</title>
-
-<link rel="stylesheet" href="style.css">
-
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<title>Buddy's Adventure 🐾</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>">
+<link rel="stylesheet" href="style.css" />
 </head>
+<body class="scene-intro">
 
-<body>
+  <!-- ================= AMBIENT BACKGROUND ================= -->
+  <div class="sky"></div>
+  <div class="clouds" id="clouds" aria-hidden="true"></div>
+  <div class="petals" id="petals" aria-hidden="true"></div>
+  <div class="sparkles" id="sparkles" aria-hidden="true"></div>
 
-<div class="sky"></div>
+  <!-- ================= SOUND TOGGLE ================= -->
+  <button id="sound-toggle" class="icon-btn" aria-label="Toggle sound" title="Toggle soft music">🔇</button>
 
-<div class="petals"></div>
+  <!-- ================= PROGRESS DOTS ================= -->
+  <div class="progress" id="progress" aria-hidden="true">
+    <span class="dot" data-scene="intro"></span>
+    <span class="dot" data-scene="level1"></span>
+    <span class="dot" data-scene="level2"></span>
+    <span class="dot" data-scene="level3"></span>
+    <span class="dot" data-scene="level4"></span>
+    <span class="dot" data-scene="level5"></span>
+    <span class="dot" data-scene="level6"></span>
+  </div>
 
-<div class="container">
+  <!-- ================= BUDDY THE DOG (persistent character) ================= -->
+  <div id="dog-stage">
+    <div class="paw-trail" id="paw-trail"></div>
+    <div class="speech-bubble" id="speech-bubble"><p id="speech-text"></p></div>
+    <div class="hearts" id="hearts"></div>
+    <svg id="buddy" viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+      <ellipse class="dog-shadow" cx="150" cy="248" rx="82" ry="10"/>
+      <g id="dog-body-group">
+        <!-- tail -->
+        <g id="dog-tail" style="transform-origin:70px 150px;">
+          <path d="M70,150 C40,130 20,150 25,175 C30,195 55,190 70,165 Z" fill="#e8b568"/>
+        </g>
+        <!-- back legs -->
+        <g id="dog-legs-back">
+          <rect x="95" y="195" width="20" height="45" rx="9" fill="#e0aa5f"/>
+          <rect x="195" y="195" width="20" height="45" rx="9" fill="#dba455"/>
+        </g>
+        <!-- body -->
+        <ellipse cx="155" cy="175" rx="85" ry="58" fill="#f2c579"/>
+        <ellipse cx="155" cy="200" rx="55" ry="30" fill="#fbe6bf"/>
+        <!-- front legs -->
+        <g id="dog-legs-front">
+          <rect x="110" y="205" width="20" height="42" rx="9" fill="#f2c579"/>
+          <rect x="185" y="205" width="20" height="42" rx="9" fill="#f2c579"/>
+        </g>
+        <!-- head -->
+        <g id="dog-head" style="transform-origin:150px 120px;">
+          <g id="dog-ear-left" style="transform-origin:100px 90px;">
+            <path d="M100,90 C75,85 65,120 85,145 C100,155 112,130 108,105 Z" fill="#dba455"/>
+          </g>
+          <g id="dog-ear-right" style="transform-origin:205px 90px;">
+            <path d="M205,90 C230,85 240,120 220,145 C205,155 193,130 197,105 Z" fill="#e0aa5f"/>
+          </g>
+          <ellipse cx="152" cy="120" rx="62" ry="55" fill="#f6cf8e"/>
+          <ellipse cx="152" cy="148" rx="38" ry="28" fill="#fff3de"/>
+          <!-- eyes -->
+          <g id="dog-eye-left">
+            <ellipse cx="128" cy="112" rx="10" ry="12" fill="#4a3527"/>
+            <circle cx="131" cy="107" r="3" fill="#fff"/>
+          </g>
+          <g id="dog-eye-right">
+            <ellipse cx="178" cy="112" rx="10" ry="12" fill="#4a3527"/>
+            <circle cx="181" cy="107" r="3" fill="#fff"/>
+          </g>
+          <!-- brows for expression -->
+          <path id="brow-left" class="brow" d="M116,96 Q127,90 140,97" stroke="#c68a3e" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path id="brow-right" class="brow" d="M164,97 Q177,90 188,96" stroke="#c68a3e" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <!-- nose & mouth -->
+          <ellipse cx="152" cy="140" rx="12" ry="9" fill="#5a4432"/>
+          <path id="dog-mouth" d="M152,149 Q152,162 132,160 M152,149 Q152,162 172,160" stroke="#5a4432" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+          <path id="dog-tongue" d="M148,161 Q152,178 158,161 Q153,170 148,161 Z" fill="#f28ba0"/>
+          <!-- cheeks -->
+          <ellipse cx="112" cy="135" rx="10" ry="6" fill="#f6a9a9" opacity="0.55"/>
+          <ellipse cx="192" cy="135" rx="10" ry="6" fill="#f6a9a9" opacity="0.55"/>
+        </g>
+      </g>
+    </svg>
+  </div>
 
-<div class="dog-wrapper">
+  <!-- ================= SCENES ================= -->
+  <main id="scenes">
 
-<svg id="buddy" width="320" height="300" viewBox="0 0 320 300">
+    <!-- INTRO -->
+    <section class="scene active" id="scene-intro">
+      <div class="glass-card intro-card">
+        <h1 class="title-script">Buddy's Little Adventure</h1>
+        <button class="glow-btn" id="btn-pet-me">Pet Me <span aria-hidden="true">🐾</span></button>
+      </div>
+    </section>
 
-<!-- Tail -->
+    <!-- LEVEL 1: FETCH -->
+    <section class="scene" id="scene-level1">
+      <div class="glass-card level-card">
+        <h2>Level 1 · Fetch!</h2>
+        <p class="hint">Drag the tennis ball anywhere and let go — Buddy will fetch it 🎾</p>
+        <div class="throw-counter">Throws: <span id="throw-count">0</span> / 3</div>
+      </div>
+      <div class="play-area" id="fetch-area">
+        <div class="ball" id="tennis-ball" title="Drag me!">🎾</div>
+      </div>
+    </section>
 
-<g id="tail">
+    <!-- LEVEL 2: TREATS -->
+    <section class="scene" id="scene-level2">
+      <div class="glass-card level-card">
+        <h2>Level 2 · Guess the Treat</h2>
+        <p class="hint">Only one of these is Buddy's favorite... can you guess it?</p>
+      </div>
+      <div class="treats" id="treats">
+        <button class="treat-card" data-treat="0"><span class="treat-emoji">🦴</span><span>Bone</span></button>
+        <button class="treat-card" data-treat="1"><span class="treat-emoji">🥜</span><span>Peanut Butter Biscuit</span></button>
+        <button class="treat-card" data-treat="2"><span class="treat-emoji">🥕</span><span>Carrot Stick</span></button>
+      </div>
+      <p class="reaction-text" id="treat-reaction"></p>
+    </section>
 
-<ellipse cx="235" cy="170"
-rx="18"
-ry="55"
-fill="#d99c58"
-transform="rotate(40 235 170)"/>
+    <!-- LEVEL 3: QUESTION -->
+    <section class="scene" id="scene-level3">
+      <div class="glass-card level-card question-card">
+        <h2>Before I continue...</h2>
+        <p class="hint">My human wanted me to ask something 🥺</p>
+        <div class="choice-row">
+          <button class="choice-btn" data-choice="single">❤️ I'm single</button>
+          <button class="choice-btn" data-choice="committed">💛 I'm committed</button>
+          <button class="choice-btn" data-choice="pass">🌼 I'd rather not answer</button>
+        </div>
+      </div>
+    </section>
 
-</g>
+    <!-- END SCENE: COMMITTED -->
+    <section class="scene" id="scene-committed">
+      <div class="glass-card level-card end-card">
+        <h2>That's wonderful 💛</h2>
+        <p class="big-line">I hope this little adventure still made you smile 😊</p>
+        <button class="glow-btn subtle" id="btn-restart-1">Start Over</button>
+      </div>
+    </section>
 
-<!-- Body -->
+    <!-- LEVEL 4: MEMORY PUZZLE -->
+    <section class="scene" id="scene-level4">
+      <div class="glass-card level-card">
+        <h2>Level 4 · Paw Memory</h2>
+        <p class="hint" id="memory-hint">Watch the paws light up, then repeat the pattern!</p>
+      </div>
+      <div class="memory-grid" id="memory-grid"></div>
+    </section>
 
-<ellipse
-cx="160"
-cy="170"
-rx="80"
-ry="55"
-fill="#e3ab67"/>
+    <!-- LEVEL 5: POEM -->
+    <section class="scene" id="scene-level5">
+      <div class="glass-card level-card poem-scene">
+        <h2>Level 5 · A Little Envelope</h2>
+        <div class="envelope" id="envelope">
+          <div class="envelope-flap"></div>
+          <div class="envelope-body"></div>
+          <div class="envelope-letter" id="envelope-letter">💌</div>
+        </div>
+        <p class="hint" id="envelope-hint">Tap the envelope to open it</p>
+        <div class="poem-box" id="poem-box" hidden>
+          <p id="poem-text"></p>
+        </div>
+      </div>
+    </section>
 
-<!-- Belly -->
+    <!-- LEVEL 6: FINAL -->
+    <section class="scene" id="scene-level6">
+      <div class="glass-card level-card final-card">
+        <p class="final-message">
+          I just wanted you to know<br/>
+          I really enjoy talking to you.<br/>
+          Would you like to go for coffee sometime? ☕
+        </p>
+        <div class="choice-row">
+          <button class="choice-btn" data-final="yes">😊 Yes</button>
+          <button class="choice-btn" data-final="maybe">🤍 Maybe</button>
+          <button class="choice-btn" data-final="think">🌸 Let me think</button>
+        </div>
+        <p class="reaction-text" id="final-reaction"></p>
+      </div>
+    </section>
 
-<ellipse
-cx="160"
-cy="190"
-rx="55"
-ry="28"
-fill="#f7d7a7"/>
+  </main>
 
-<!-- Head -->
-
-<circle
-cx="105"
-cy="110"
-r="55"
-fill="#e3ab67"/>
-
-<!-- Left Ear -->
-
-<ellipse
-id="earLeft"
-cx="62"
-cy="92"
-rx="18"
-ry="42"
-fill="#c98945"
-transform="rotate(-18 62 92)"/>
-
-<!-- Right Ear -->
-
-<ellipse
-id="earRight"
-cx="148"
-cy="92"
-rx="18"
-ry="42"
-fill="#c98945"
-transform="rotate(18 148 92)"/>
-
-<!-- Eyes -->
-
-<ellipse
-class="eye"
-cx="88"
-cy="108"
-rx="4"
-ry="8"
-fill="#222"/>
-
-<ellipse
-class="eye"
-cx="122"
-cy="108"
-rx="4"
-ry="8"
-fill="#222"/>
-
-<!-- Nose -->
-
-<ellipse
-cx="105"
-cy="130"
-rx="8"
-ry="6"
-fill="#333"/>
-
-<!-- Mouth -->
-
-<path
-d="M97 142 Q105 150 113 142"
-stroke="#333"
-stroke-width="3"
-fill="none"
-stroke-linecap="round"/>
-
-<!-- Tongue -->
-
-<ellipse
-cx="105"
-cy="148"
-rx="6"
-ry="8"
-fill="#ff91aa"/>
-
-<!-- Front Legs -->
-
-<rect
-x="118"
-y="205"
-width="16"
-height="52"
-rx="8"
-fill="#d99c58"/>
-
-<rect
-x="145"
-y="205"
-width="16"
-height="52"
-rx="8"
-fill="#d99c58"/>
-
-<!-- Back Legs -->
-
-<rect
-x="183"
-y="205"
-width="16"
-height="52"
-rx="8"
-fill="#d99c58"/>
-
-<rect
-x="208"
-y="205"
-width="16"
-height="52"
-rx="8"
-fill="#d99c58"/>
-
-</svg>
-
-</div>
-
-<h1>Hi 🌸</h1>
-
-<p>
-
-I found something today...
-
-<br><br>
-
-Would you come on a tiny adventure with me?
-
-</p>
-
-<button id="startBtn">
-
-Pet Me 🐾
-
-</button>
-
-</div>
-
-<script src="script.js"></script>
-
+  <script src="script.js"></script>
 </body>
-
 </html>
